@@ -48,5 +48,21 @@ userSchema.pre("save", async function(next) {
     next();
 })
 
+/* on cherche le user dans la base d'après son email unique
+*si on l'a trouvé on compare le hash du mot de passe de la requête avec le hash stocké dans la base
+*si la comparaison est valide on return le user
+*/
+userSchema.statics.login = async function(email, password) {
+    const user = await this.findOne({ email });
+    if (user) {
+        const auth = await bcrypt.compare(password, user.password)
+        if (auth) {
+            return user
+        }
+        throw Error('Incorrect password');
+    }
+    throw Error('Incorrect email')
+};
+
 const UserModel = mongoose.model('user', userSchema);
 module.exports = UserModel;
