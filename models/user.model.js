@@ -7,8 +7,8 @@ const userSchema = new mongoose.Schema(
         pseudo: {
             type: String, 
             required: true,
-            minLength: 3,
-            maxLength: 50,
+            minlength: 3,
+            maxlength: 50,
             unique: true,
             trim: true //supprime les espaces placés en début et en fin de string
         },
@@ -17,12 +17,13 @@ const userSchema = new mongoose.Schema(
             required: true,
             validate: [isEmail],
             lowercase: true,
+            unique: true,
             trim: true,
         },
         password: {
             type: String,
             required: true,
-            minLength: 6
+            minlength: 6
         },
         picture: {
             type: String,

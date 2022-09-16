@@ -1,5 +1,6 @@
 const UserModel = require('../models/user.model');
 const jwt = require('jsonwebtoken');
+const { signUpErrors, signInErrors } = require('../utils/error.utils');
 
 
 //Le token est généré à partir de l'id de utilisateur
@@ -13,10 +14,11 @@ module.exports.signUp = async (req, res) => {
     const {pseudo, email, password} = req.body //equivalent a : const pseudo = req.body.pseudo, const email = req.body.email, etc.
     try {
         const user = await UserModel.create({pseudo, email, password});
-        res.status(201).json({ message: `Utilisateur créé.` });
+        res.status(201).json({ message: `Utilisateur créé : ` + user });
     }
     catch(err) {
-        res.status(400).send({ err })
+        const errors = signUpErrors(err)
+        res.status(400).send({errors})
     }
 }
 
@@ -29,7 +31,8 @@ module.exports.signIn = async (req, res) => {
         res.cookie('jwt', token, { httpOnly: true, maxAge: 86400000}); // créé un cookie avec en paramètres : son nom, sa valeur, et l'option httpOnly qui complique la récupération du cookie par du code JS malveillant
         res.status(200).json({ message: 'User logged in'})
     } catch (err) {
-        res.status(401).json(err);
+        const errors = signInErrors(err);
+        res.status(401).json({ errors });
     }
 }
 
