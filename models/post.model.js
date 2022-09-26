@@ -1,5 +1,18 @@
 const mongoose = require('mongoose');
 
+//Shema de commentaire -> CommentSchema
+
+const CommentSchema = new mongoose.Schema(
+    {
+        commenterId: String,
+        commenterPseudo: String,
+        text: String
+    },
+    {
+        timestamps: true,
+    }
+);
+
 const PostSchema = new mongoose.Schema(
     {
         posterId : {
@@ -21,7 +34,7 @@ const PostSchema = new mongoose.Schema(
             type: [String],
             required: true,
         },
-        comments: {                 //crée une sous base de données contenant les commentaires
+        /*comments: {                 //crée une sous base de données contenant les commentaires
             type: [
                 {
                     commenterId: String,
@@ -31,7 +44,8 @@ const PostSchema = new mongoose.Schema(
                 }
             ],
             required: true,
-        },
+        },*/
+        comments: [CommentSchema]
     },
     {
         timestamps: true,

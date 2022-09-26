@@ -1,4 +1,3 @@
-const postModel = require('../models/post.model');
 const PostModel = require('../models/post.model');
 const UserModel = require('../models/user.model');
 const ObjectID = require('mongoose').Types.ObjectId;
@@ -27,7 +26,7 @@ module.exports.createPost = async (req, res) => {
 }
 
 module.exports.updatePost = (req, res) => {
-    if (!ObjectID.isValid(req.params.id)) //est ce que l'id existe dans la base de données ?
+    if (!ObjectID.isValid(req.params.id)) //vérifie que l'id est bien un ObjectId MongoDB valide
         return res.status(400).send('ID unknown : ' + req.params.id);
 
     const updatedPost = {
@@ -47,7 +46,7 @@ module.exports.updatePost = (req, res) => {
 }
 
 module.exports.deletePost = (req, res) => {
-    if (!ObjectID.isValid(req.params.id)) //est ce que l'id existe dans la base de données ?
+    if (!ObjectID.isValid(req.params.id)) 
         return res.status(400).send('ID unknown : ' + req.params.id);
 
     PostModel.findByIdAndDelete(
@@ -60,7 +59,7 @@ module.exports.deletePost = (req, res) => {
 };
 
 module.exports.likePost = async (req, res) => {
-    if (!ObjectID.isValid(req.params.id)) //est ce que l'id existe dans la base de données ?
+    if (!ObjectID.isValid(req.params.id)) 
         return res.status(400).send('ID unknown : ' + req.params.id);
 
     try {
@@ -69,17 +68,9 @@ module.exports.likePost = async (req, res) => {
             {$addToSet: { likers: req.body.id }},
             { new: true }
         )
+        .then((data) => res.send(data))
         .catch((err) => res.status(400).send({ message: err }));
         
-        await UserModel.findByIdAndUpdate(
-            req.body.id,
-            {
-                $addToSet: { postLiked: req.params.id }
-            },
-            { new: true }
-        )
-            .then((data) => res.send(data))
-            .catch((err) => res.status(400).send({ message: err }));
     } catch (err) {
         return res.status(400).send(err);
     }
@@ -95,17 +86,9 @@ module.exports.unlikePost = async (req, res) => {
             {$pull: { likers: req.body.id }},
             { new: true }
         )
-        .catch((err) => res.status(400).send({ message: err }));
-            
-        await UserModel.findByIdAndUpdate(
-            req.body.id,
-            {
-                $pull: { postLiked: req.params.id }
-            },
-            { new: true }
-        )
         .then((data) => res.send(data))
         .catch((err) => res.status(400).send({ message: err }));
+            
     } catch (err) {
         return res.status(400).send(err);
     }
@@ -124,8 +107,7 @@ module.exports.commentPost = (req, res) => {
                     comments: {
                         commenterId: req.body.commenterId,
                         commenterPseudo: req.body.commenterPseudo,
-                        text: req.body.text,
-                        timestamp: new Date().getTime() //comme les commentaires sont stockés dans une sous BDD on ne peut pas obtenir de timestamp automatique
+                        text: req.body.text
                     }
                 }
             },
@@ -150,22 +132,21 @@ module.exports.editCommentPost = (req, res) => {
         return res.status(400).send('ID unknown : ' + req.params.id);
 
     try {
-        return PostModel.findById(
-            req.params.id,
-            (err, data) => {
-                const theComment = data.comments.find((comment) =>
-                    comment._id.equals(req.body.commentId)
-                );
+        /*updateOne -> Vérifier l'id du post, vérifier l'id du commentaire ("comments._id": req.body.commentId)
+        $set: "comments.$.text": req.body.text
+        */
 
-                if (!theComment) return res.status(404).send('Comment not found')
-                theComment.text = req.body.text;
-
-                return data.save((err) => {
-                    if (!err) return res.status(200).send(data);
-                    return res.status(500).send(err);
-                });
+        return PostModel.updateOne(
+           {_id: req.params.id, 'comments._id': req.body.commentId},
+           {
+            $set: {
+                "comments.$.text": req.body.text
             }
-        );
+           }
+        )
+        .then((data) => res.send(data))
+        .catch((err) => res.status(400).send({ message: err }));
+        
     } catch (err) {
         return res.status(400).send(err);
     }

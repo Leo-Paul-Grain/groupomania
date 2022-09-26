@@ -31,9 +31,6 @@ const userSchema = new mongoose.Schema(
         },
         bio: {
             type: String,
-        },
-        postLiked: {
-            type: [String]
         }
     },
     {

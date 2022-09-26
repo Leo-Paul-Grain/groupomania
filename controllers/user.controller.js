@@ -7,7 +7,7 @@ module.exports.getAllUsers = async (req, res) => {
 }
 
 module.exports.getOneUser = (req, res) => {
-    if (!ObjectID.isValid(req.params.id)) //est ce que l'id existe dans la base de données ?
+    if (!ObjectID.isValid(req.params.id))
         return res.status(400).send('ID unknown : ' + req.params.id)
         
     UserModel.findById(req.params.id, (err, data) => {
@@ -17,7 +17,7 @@ module.exports.getOneUser = (req, res) => {
 };
 
 module.exports.updateUser = async (req, res) => {
-    if (!ObjectID.isValid(req.params.id)) //est ce que l'id existe dans la base de données ?
+    if (!ObjectID.isValid(req.params.id))
         return res.status(400).send('ID unknown : ' + req.params.id)
 
     try {
@@ -31,7 +31,7 @@ module.exports.updateUser = async (req, res) => {
             { new: true, upsert: true, setDefaultOnInsert: true}, //option new : retourne le document après l'update, upsert : si aucun document ne correspond au filtre mongo le crée, setDefaultOnInsert : si il y a upsert mongo insérera valeur par défaut
             (err, data) => {
                 if (!err) return res.send(data);
-                if (err) return res.status(500).json({ message: err});
+                if (err) return res.status(400).json({ message: err});
             }
         )
     } catch (err) {
