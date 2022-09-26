@@ -1,6 +1,7 @@
 const PostModel = require('../models/post.model');
 const UserModel = require('../models/user.model');
 const ObjectID = require('mongoose').Types.ObjectId;
+const jwt = require('jsonwebtoken');
 
 module.exports.readPost = (req, res) => {
     PostModel.find((err, data) => {
@@ -10,7 +11,7 @@ module.exports.readPost = (req, res) => {
 };
 
 module.exports.createPost = async (req, res) => {
-    const newPost = new postModel({
+    const newPost = new PostModel({
         posterId: req.body.posterId,
         message: req.body.message,
         video: req.body.video,
@@ -28,7 +29,7 @@ module.exports.createPost = async (req, res) => {
 module.exports.updatePost = (req, res) => {
     if (!ObjectID.isValid(req.params.id)) //vérifie que l'id est bien un ObjectId MongoDB valide
         return res.status(400).send('ID unknown : ' + req.params.id);
-
+    
     const updatedPost = {
         message: req.body.message
     }
@@ -38,10 +39,15 @@ module.exports.updatePost = (req, res) => {
         { $set: updatedPost },
         { new: true },
         (err, data) => {
+            const token = req.cookies.jwt;
+            let decodedToken = ''
+            if (token) {
+            decodedToken = jwt.verify(token, process.env.TOKEN_SECRET)
+            }
+            if (decodedToken.id !== data.posterId) return res.status(401).send('Unauthorized User');
             if (!err) res.send(data);
             else console.log("Update error : " + err);
         }
-
     )
 }
 
@@ -120,22 +126,15 @@ module.exports.commentPost = (req, res) => {
     }
 };
 
-/* On vérifie comme d'habitude que l'id passé en paramètre existe
-*on cherche le post dont il faut modifier les commentaires avec l'id passé en paramètre
-*on cherche ensuite le commentaire à update de ce post, avec la méthode equals qui va chercher le commentaire dont l'id correspond a l'id passé dans le body
-*si on ne le trouve pas on renvoie une erreur
-*si on le trouve on change son texte par celui qui est envoyé dans le body
-*on enregistre
+/* On vérifie que l'id passé en paramètre est un ObjectId mongoDB valide
+*on utilise la méthode updateOne avec un double filtre, on cherche d'abord le post d'apèrs l'id en param puis le commentaire avec l'id du body
+*on update le champ avec la méthode set et l'opérateur positionnel $ qui identifie un élément d'un array sans qu'on est besoin de spécifier son index
 */
 module.exports.editCommentPost = (req, res) => {
     if (!ObjectID.isValid(req.params.id))
         return res.status(400).send('ID unknown : ' + req.params.id);
 
     try {
-        /*updateOne -> Vérifier l'id du post, vérifier l'id du commentaire ("comments._id": req.body.commentId)
-        $set: "comments.$.text": req.body.text
-        */
-
         return PostModel.updateOne(
            {_id: req.params.id, 'comments._id': req.body.commentId},
            {

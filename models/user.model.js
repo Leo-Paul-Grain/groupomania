@@ -38,8 +38,8 @@ const userSchema = new mongoose.Schema(
     }
 )
 
-/*la méthode "pre" de mongoose permet d'appeller une fonction avant quelquechose, ici la sauvegarde dans la BDD ("save")
-Ensuite on sale le mot de passe et on le passe à l'objet qui va être sauvegardé dans la base*/
+/*la méthode "pre" de mongoose permet d'appeller une fonction avant quelquechose, ici la sauvegarde d'un user dans la BDD ("save")
+On sale le mot de passe et on le passe à l'objet qui va être sauvegardé dans la base*/
 userSchema.pre("save", async function(next) {
     const salt = await bcrypt.genSalt();
     this.password = await bcrypt.hash(this.password, salt);
