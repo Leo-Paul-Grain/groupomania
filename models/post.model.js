@@ -34,17 +34,6 @@ const PostSchema = new mongoose.Schema(
             type: [String],
             required: true,
         },
-        /*comments: {                 //crée une sous base de données contenant les commentaires
-            type: [
-                {
-                    commenterId: String,
-                    commenterPseudo: String,
-                    text: String,
-                    timestamp: Number,
-                }
-            ],
-            required: true,
-        },*/
         comments: [CommentSchema]
     },
     {

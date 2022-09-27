@@ -26,6 +26,12 @@ module.exports.createPost = async (req, res) => {
     }
 }
 
+/*On récupére le nouveau message dans le body et on le stocke dans une variable
+*On cherche le post à update d'après son id passé en paramètres
+*On decode le token passé dans le cookie pour récupérer l'id de l'utilisateur qui envoie la requête
+*on vérifie que c'est le même id que celui de l'auteur du post, si ce n'est pas le cas on return
+*si c'est bon on fait l'update avec $set
+*/
 module.exports.updatePost = (req, res) => {
     if (!ObjectID.isValid(req.params.id)) //vérifie que l'id est bien un ObjectId MongoDB valide
         return res.status(400).send('ID unknown : ' + req.params.id);
@@ -34,34 +40,48 @@ module.exports.updatePost = (req, res) => {
         message: req.body.message
     }
 
-    PostModel.findByIdAndUpdate(  //la méthode findOneAndUpdate prend en 1er paramétre un filtre pour trouver le document à update, en 2eme l'element de ce document à update et en 3 le callback
-        req.params.id,
-        { $set: updatedPost },
-        { new: true },
-        (err, data) => {
+    PostModel.findOne({_id: req.params.id})
+        .then((post) => {
             const token = req.cookies.jwt;
-            let decodedToken = ''
+            let decodedToken = '';
             if (token) {
-            decodedToken = jwt.verify(token, process.env.TOKEN_SECRET)
+                decodedToken = jwt.verify(token, process.env.TOKEN_SECRET)
             }
-            if (decodedToken.id !== data.posterId) return res.status(401).send('Unauthorized User');
-            if (!err) res.send(data);
-            else console.log("Update error : " + err);
-        }
-    )
-}
+            if (decodedToken.id !== post.posterId) {
+                return res.status(401).send('Unauthorized User');
+            } else {
+                PostModel.updateOne({ _id: req.params.id }, { $set : updatedPost})
+                    .then(() => res.status(200).json({message: "Post udpated"}))
+                    .catch(error => res.status(401).json({ error }));
+            }
+        })
+        .catch((error) => {
+            res.status(400).json({ error });
+          });
+};
 
 module.exports.deletePost = (req, res) => {
     if (!ObjectID.isValid(req.params.id)) 
         return res.status(400).send('ID unknown : ' + req.params.id);
 
-    PostModel.findByIdAndDelete(
-        req.params.id,
-        (err, data) => {
-            if (!err) res.send(data);
-            else console.log("Delete error : " + err);
+    PostModel.findOne({ _id: req.params.id})
+    .then((post) => {
+        const token = req.cookies.jwt;
+        let decodedToken = '';
+        if (token) {
+            decodedToken = jwt.verify(token, process.env.TOKEN_SECRET)
         }
-    );
+        if (decodedToken.id !== post.posterId) {
+            return res.status(401).send('Unauthorized User');
+        } else {
+            PostModel.deleteOne({ _id: req.params.id })
+                .then(() => res.status(200).json({message: "Post deleted"}))
+                .catch(error => res.status(400).json({ error }));
+        }
+    })
+    .catch((error) => {
+        res.status(400).json({ error });
+      });
 };
 
 module.exports.likePost = async (req, res) => {
@@ -130,7 +150,7 @@ module.exports.commentPost = (req, res) => {
 *on utilise la méthode updateOne avec un double filtre, on cherche d'abord le post d'apèrs l'id en param puis le commentaire avec l'id du body
 *on update le champ avec la méthode set et l'opérateur positionnel $ qui identifie un élément d'un array sans qu'on est besoin de spécifier son index
 */
-module.exports.editCommentPost = (req, res) => {
+/*module.exports.editCommentPost = (req, res) => {
     if (!ObjectID.isValid(req.params.id))
         return res.status(400).send('ID unknown : ' + req.params.id);
 
@@ -150,31 +170,66 @@ module.exports.editCommentPost = (req, res) => {
         return res.status(400).send(err);
     }
 };
+*/
+
+module.exports.editCommentPost = (req, res) => {
+    if (!ObjectID.isValid(req.params.id))
+        return res.status(400).send('ID unknown : ' + req.params.id);
+    
+    PostModel.findOne({ _id: req.params.id}, {comments: {$elemMatch: {_id: req.body.commentId}}})
+    .then((theComment) => {
+        //console.log(theComment)
+        const token = req.cookies.jwt;
+        let decodedToken = '';
+        if (token) {
+            decodedToken = jwt.verify(token, process.env.TOKEN_SECRET)
+            //console.log('Id in decoded Token is : ' + decodedToken.id)
+            //console.log('Commenter id is:' + theComment.comments[0].commenterId)
+        }
+        if (decodedToken.id !== theComment.comments[0].commenterId) {
+            return res.status(401).send('Unauthorized User');
+        } else {
+            PostModel.updateOne(
+                { "_id": req.params.id, 'comments._id': req.body.commentId},  
+                { $set: {'comments.$.text': req.body.text} }
+                )
+                .then(() => res.status(200).json({message: "Comment udpated"}))
+                .catch(error => res.status(400).json({ error }));
+        }
+    })
+    .catch((error) => {
+        res.status(400).json({ error });
+    });
+};
+
 
 /* On cherche le post dans la base
 *on utilise l'opérateur $pull pour retirer le commentaire, en lui précisant que c'est le commentaire qui à l'id passé dans le body 
 */
+
 module.exports.deleteCommentPost = (req, res) => {
     if (!ObjectID.isValid(req.params.id))
         return res.status(400).send('ID unknown : ' + req.params.id);
 
-    try {
-        return PostModel.findByIdAndUpdate(
-            req.params.id,
-            {
-                $pull: {
-                    comments: {
-                        _id: req.body.commentId
-                    }
-                }
-            },
-            { new: true },
-            (err, data) => {
-                if (!err) return res.send(data);
-                else return res.status(400).send(err);
-            }
-        );
-    } catch (err) {
-        return res.status(400).send(err);
-    }
+    PostModel.findOne({ _id: req.params.id}, {comments: {$elemMatch: {_id: req.body.commentId}}})
+    .then((theComment) => {
+        const token = req.cookies.jwt;
+        let decodedToken = '';
+        if (token) {
+            decodedToken = jwt.verify(token, process.env.TOKEN_SECRET)
+        }
+        if (decodedToken.id !== theComment.comments[0].commenterId) {
+            return res.status(401).send('Unauthorized User');
+        } else {
+            PostModel.updateOne(
+                { "_id": req.params.id, 'comments._id': req.body.commentId},  
+                { $pull: {comments: {_id: req.body.commentId}} }
+                )
+                .then(() => res.status(200).json({message: "Comment deleted"}))
+                .catch(error => res.status(400).json({ error }));
+        }
+    })
+    .catch((error) => {
+        res.status(400).json({ error });
+    });
 };
