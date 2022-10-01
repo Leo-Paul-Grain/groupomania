@@ -12,7 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // jwt
-app.get('*', checkUser);
+//app.get('*', checkUser);
 
 //permettra côté front de checker immédiatement si un utilisateur a un token en cours de validité et de le connecter immédiatement quand il arrive sur notre app si c'est bien le cas
 app.get('/jwtid', requireAuth, (req, res) => {

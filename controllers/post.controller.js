@@ -27,9 +27,7 @@ module.exports.createPost = async (req, res) => {
 }
 
 /*On récupére le nouveau message dans le body et on le stocke dans une variable
-*On cherche le post à update d'après son id passé en paramètres
-*On decode le token passé dans le cookie pour récupérer l'id de l'utilisateur qui envoie la requête
-*on vérifie que c'est le même id que celui de l'auteur du post, si ce n'est pas le cas on return
+*On cherche le post à update d'après son id passé en paramètres (et l'id du user récupéré par checUser pour vérifier qu'il est autorisé à modifier ce post)
 *si c'est bon on fait l'update avec $set
 */
 module.exports.updatePost = (req, res) => {
@@ -40,7 +38,10 @@ module.exports.updatePost = (req, res) => {
         message: req.body.message
     }
 
-    PostModel.findOne({_id: req.params.id})
+    PostModel.updateOne({ _id: req.params.id, posterId: req.user._id }, { $set : updatedPost})
+                    .then(() => res.status(200).json({message: "Post udpated"}))
+                    .catch(error => res.status(401).json({ error }));
+    /*PostModel.findOne({_id: req.params.id})
         .then((post) => {
             const token = req.cookies.jwt;
             let decodedToken = '';
@@ -57,7 +58,7 @@ module.exports.updatePost = (req, res) => {
         })
         .catch((error) => {
             res.status(400).json({ error });
-          });
+          });*/
 };
 
 module.exports.deletePost = (req, res) => {
@@ -176,17 +177,10 @@ module.exports.editCommentPost = (req, res) => {
     if (!ObjectID.isValid(req.params.id))
         return res.status(400).send('ID unknown : ' + req.params.id);
     
-    PostModel.findOne({ _id: req.params.id}, {comments: {$elemMatch: {_id: req.body.commentId}}})
+    //PostModel.findOne({ _id: req.params.id}, {comments: {$elemMatch: {_id: req.body.commentId}}})
+    PostModel.findOne({ _id: req.params.id, "comments._id": req.body.commentId}, "comments.$")
     .then((theComment) => {
-        //console.log(theComment)
-        const token = req.cookies.jwt;
-        let decodedToken = '';
-        if (token) {
-            decodedToken = jwt.verify(token, process.env.TOKEN_SECRET)
-            //console.log('Id in decoded Token is : ' + decodedToken.id)
-            //console.log('Commenter id is:' + theComment.comments[0].commenterId)
-        }
-        if (decodedToken.id !== theComment.comments[0].commenterId) {
+        if (req.auth.userId != theComment.comments[0].commenterId) { //idéalement je pourrais modifier theComment.comments[0].commenterId (pour comments.$.commenterId ?)
             return res.status(401).send('Unauthorized User');
         } else {
             PostModel.updateOne(

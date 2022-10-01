@@ -10,6 +10,7 @@ const createToken = (id) => {
     })
 };
 
+
 module.exports.signUp = async (req, res) => {
     const {pseudo, email, password} = req.body //equivalent a : const pseudo = req.body.pseudo, const email = req.body.email, etc.
     try {
@@ -21,6 +22,26 @@ module.exports.signUp = async (req, res) => {
         res.status(400).send({errors})
     }
 }
+/*
+module.exports.signIn = async (req, res) => {
+    const { email, password } = req.body
+
+    try {
+        const user = await UserModel.login(email, password); //cherche l'utilisateur dans la base et stock dans une variable user
+        res.status(200).json({
+            userId: user._id,
+            token: jwt.sign(
+                { userId: user._id },
+                'process.env.TOKEN_SECRET',
+                { expiresIn: '24h' }
+            )
+        });
+    } catch (err) {
+        const errors = signInErrors(err);
+        res.status(401).json({ errors });
+    }
+};
+*/
 
 module.exports.signIn = async (req, res) => {
     const { email, password } = req.body
@@ -34,8 +55,10 @@ module.exports.signIn = async (req, res) => {
         const errors = signInErrors(err);
         res.status(401).json({ errors });
     }
-}
+};
 
+
+//pour logout il faudra supprimer ça et à la place, supprimer le cookie du localstorage
 module.exports.logout = (req, res) => {
     res.cookie('jwt', '', {maxAge: 1 }); //défini la durée du cookie sur 1 milliseconde pour le faire deisparaitre
     res.redirect('/'); //si on ne fait pas ça le res.cookie ne marchera pas car il ne constitue pas une requête valide en soi
