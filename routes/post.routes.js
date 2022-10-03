@@ -3,16 +3,16 @@ const router = express.Router();
 const postController = require('../controllers/post.controller');
 const { checkUser } = require('../middleware/auth.middleware');
 
-router.get('/', postController.readPost);
-router.post('/', postController.createPost);
-router.put('/:id', postController.updatePost);
-router.delete('/:id', postController.deletePost);
-router.patch('/like-post/:id', postController.likePost);
-router.patch('/unlike-post/:id', postController.unlikePost);
+router.get('/', checkUser, postController.readPost);
+router.post('/', checkUser, postController.createPost);
+router.put('/:id', checkUser, postController.updatePost);
+router.delete('/:id', checkUser, postController.deletePost);
+router.patch('/like-post/:id',checkUser, postController.likePost);
+router.patch('/unlike-post/:id', checkUser, postController.unlikePost);
 
 //Routes des commentaires
-router.patch('/comment-post/:id', postController.commentPost);
+router.patch('/comment-post/:id', checkUser, postController.commentPost);
 router.patch('/edit-comment-post/:id', checkUser, postController.editCommentPost);
-router.patch('/delete-comment-post/:id', postController.deleteCommentPost);
+router.patch('/delete-comment-post/:id', checkUser, postController.deleteCommentPost);
 
 module.exports = router;

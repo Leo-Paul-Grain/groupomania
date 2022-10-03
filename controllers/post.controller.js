@@ -27,8 +27,10 @@ module.exports.createPost = async (req, res) => {
 }
 
 /*On récupére le nouveau message dans le body et on le stocke dans une variable
-*On cherche le post à update d'après son id passé en paramètres (et l'id du user récupéré par checUser pour vérifier qu'il est autorisé à modifier ce post)
-*si c'est bon on fait l'update avec $set
+*On cherche le post à update d'après son id passé en paramètres
+*on vérifie grâce à l'id passé par le middleware checkUser que l'auteur de la requête est bien l'auteur du post
+*si ce n'est pas le cas on return une erreur
+*si c'est bien lui on fait l'update
 */
 module.exports.updatePost = (req, res) => {
     if (!ObjectID.isValid(req.params.id)) //vérifie que l'id est bien un ObjectId MongoDB valide
@@ -38,17 +40,12 @@ module.exports.updatePost = (req, res) => {
         message: req.body.message
     }
 
-    PostModel.updateOne({ _id: req.params.id, posterId: req.user._id }, { $set : updatedPost})
+    /*PostModel.updateOne({ _id: req.params.id, posterId: req.auth.userId }, { $set : updatedPost})
                     .then(() => res.status(200).json({message: "Post udpated"}))
-                    .catch(error => res.status(401).json({ error }));
-    /*PostModel.findOne({_id: req.params.id})
+                    .catch(error => res.status(401).json({ error })); */
+    PostModel.findOne({_id: req.params.id})
         .then((post) => {
-            const token = req.cookies.jwt;
-            let decodedToken = '';
-            if (token) {
-                decodedToken = jwt.verify(token, process.env.TOKEN_SECRET)
-            }
-            if (decodedToken.id !== post.posterId) {
+            if (req.auth.userId != post.posterId) {
                 return res.status(401).send('Unauthorized User');
             } else {
                 PostModel.updateOne({ _id: req.params.id }, { $set : updatedPost})
@@ -58,7 +55,7 @@ module.exports.updatePost = (req, res) => {
         })
         .catch((error) => {
             res.status(400).json({ error });
-          });*/
+          });
 };
 
 module.exports.deletePost = (req, res) => {
@@ -67,12 +64,7 @@ module.exports.deletePost = (req, res) => {
 
     PostModel.findOne({ _id: req.params.id})
     .then((post) => {
-        const token = req.cookies.jwt;
-        let decodedToken = '';
-        if (token) {
-            decodedToken = jwt.verify(token, process.env.TOKEN_SECRET)
-        }
-        if (decodedToken.id !== post.posterId) {
+        if (req.auth.userId != post.posterId) {
             return res.status(401).send('Unauthorized User');
         } else {
             PostModel.deleteOne({ _id: req.params.id })
@@ -207,12 +199,7 @@ module.exports.deleteCommentPost = (req, res) => {
 
     PostModel.findOne({ _id: req.params.id}, {comments: {$elemMatch: {_id: req.body.commentId}}})
     .then((theComment) => {
-        const token = req.cookies.jwt;
-        let decodedToken = '';
-        if (token) {
-            decodedToken = jwt.verify(token, process.env.TOKEN_SECRET)
-        }
-        if (decodedToken.id !== theComment.comments[0].commenterId) {
+        if (req.auth.userId != theComment.comments[0].commenterId) { //idéalement je pourrais modifier theComment.comments[0].commenterId (pour comments.$.commenterId ?)
             return res.status(401).send('Unauthorized User');
         } else {
             PostModel.updateOne(
