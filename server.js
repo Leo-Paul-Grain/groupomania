@@ -13,16 +13,17 @@ app.use(cookieParser());
 
 //CORS
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     next();
   });
 
-//permettra côté front de checker immédiatement si un utilisateur a un token en cours de validité et de le connecter immédiatement quand il arrive sur notre app si c'est bien le cas
+//permet côté front de checker immédiatement si un utilisateur a un token en cours de validité et de le connecter immédiatement quand il arrive sur notre app si c'est bien le cas
+app.get('*', checkUser)
 app.get('/jwtid', requireAuth, (req, res) => {
-    res.status(200).json({ message: "User authentification success"})
+    res.status(200).send(res.locals.user._id)
 })
 
 //routes

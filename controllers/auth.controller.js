@@ -19,29 +19,9 @@ module.exports.signUp = async (req, res) => {
     }
     catch(err) {
         const errors = signUpErrors(err)
-        res.status(400).send({errors})
+        res.status(200).send({errors})
     }
 }
-/*
-module.exports.signIn = async (req, res) => {
-    const { email, password } = req.body
-
-    try {
-        const user = await UserModel.login(email, password); //cherche l'utilisateur dans la base et stock dans une variable user
-        res.status(200).json({
-            userId: user._id,
-            token: jwt.sign(
-                { userId: user._id },
-                'process.env.TOKEN_SECRET',
-                { expiresIn: '24h' }
-            )
-        });
-    } catch (err) {
-        const errors = signInErrors(err);
-        res.status(401).json({ errors });
-    }
-};
-*/
 
 module.exports.signIn = async (req, res) => {
     const { email, password } = req.body
@@ -53,7 +33,7 @@ module.exports.signIn = async (req, res) => {
         res.status(200).json({ message: 'User logged in'})
     } catch (err) {
         const errors = signInErrors(err);
-        res.status(401).json({ errors });
+        res.status(200).json({ errors });
     }
 };
 
