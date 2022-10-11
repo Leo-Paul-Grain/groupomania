@@ -6,6 +6,7 @@ import axios from 'axios';
 /*A chaque fois qu'on appelle App on lance le useEffect
 *il va contrôler le token de l'utilisateur avec le middleware backend requireAuth
 *comme ça si il à un token qui est encore en cours de validité il n'aura pas besoin de se reconnecter
+*l'id de l'utilisateur récupéré dans le token est stocké dans le state de App grâce à UidContext. Ainsi on peut le récupèrer quand on veut
 */
 function App() {
   const [uid, setUid] = useState(null);

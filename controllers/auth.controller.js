@@ -38,7 +38,6 @@ module.exports.signIn = async (req, res) => {
 };
 
 
-//pour logout il faudra supprimer ça et à la place, supprimer le cookie du localstorage
 module.exports.logout = (req, res) => {
     res.cookie('jwt', '', {maxAge: 1 }); //défini la durée du cookie sur 1 milliseconde pour le faire deisparaitre
     res.redirect('/'); //si on ne fait pas ça le res.cookie ne marchera pas car il ne constitue pas une requête valide en soi
