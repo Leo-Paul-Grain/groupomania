@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { useSelector } from 'react-redux';
 import { NavLink } from "react-router-dom";
 import { UidContext } from './AppContext';
 import Logout from './Log/Logout';
@@ -8,6 +9,8 @@ import Logout from './Log/Logout';
 */
 const Navbar = () => {
     const uid = useContext(UidContext);
+    const userData = useSelector((state) => state.user);
+    console.log(userData)
 
     return (
         <nav>
@@ -24,7 +27,7 @@ const Navbar = () => {
                         <li></li>
                         <li className="welcome">
                             <NavLink end to="/profil">
-                                <h5>Bienvenue 'valeur dynamique'</h5>
+                                <h5>Bienvenue {userData.user.pseudo}</h5>
                             </NavLink>
                         </li>
                         <Logout />
