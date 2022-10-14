@@ -4,7 +4,7 @@ import axios from "axios";
 export const userSlice = createSlice({
     name: "user",
     initialState: {
-        user: null,
+        user: ' ',
     },
     reducers: {
         setUserData: (state, action) => {
