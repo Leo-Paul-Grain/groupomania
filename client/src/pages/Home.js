@@ -1,14 +1,18 @@
 import React, { useContext } from 'react';
 import Log from '../components/Log/index';
 import { UidContext } from "../components/AppContext";
+import Thread from '../components/Thread';
 
 const Home = () => {
     const uid = useContext(UidContext);
-    
+   
+    //si uid existe (donc un user est connecté), on affiche la page, sinon on affiche le log pour qu'il se connecte
     return (
         <div className="profil-page">
             {uid ? (
-                <h1>HOMEPAGE</h1>
+                <div className="main">
+                    <Thread />
+                </div>
             ) : (
             <div className="log-container">
                 <Log />

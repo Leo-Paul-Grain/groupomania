@@ -26,4 +26,4 @@ export const fetchUser = (uid) => async dispatch => {
         } catch (err) {
             return console.log(err)
         }
-    }
+    };
