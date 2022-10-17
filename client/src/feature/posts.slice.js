@@ -25,6 +25,6 @@ export const fetchPosts = () => async dispatch => {
         .get(`${process.env.REACT_APP_API_URL}api/post`)
         .then((res) => dispatch(setPostsData(res.data)))
         } catch (err) {
-            return console.log(err)
+            return console.log(err) //notifier l'erreur au user
         }
     }
