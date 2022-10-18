@@ -12,16 +12,17 @@ const UploadImg = () => {
     const handlePicture = (e) => {
         e.preventDefault();
         const data = new FormData();
-        //data.append("name", userData.pseudo);
         data.append("userId", userData._id);
         data.append("file", file);
-        console.log(userData, data[1])
 
         dispatch(uploadPicture(data, userData._id));
     };
 
+/*{`${process.env.REACT_APP_API_URL}api/user/upload`}
+*/
+
     return(
-        <form encType="multipart/form-data" method="post" action="http://localhost:5000/api/user/upload" onSubmit={handlePicture} className="upload-pic">
+        <form action="" onSubmit={handlePicture} className="upload-pic">
             <label htmlFor="file">Changer l'image</label>
             <input type="file" id="file" name="file" accept=".jpg, .jpeg, .png" 
             onChange={(e) => setFile(e.target.files[0])}/>

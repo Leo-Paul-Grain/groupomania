@@ -1,3 +1,4 @@
+//vérifie si une string ou un objet est vide
 export const isEmpty = (value) => {
     return (
         value === undefined || 
@@ -6,3 +7,14 @@ export const isEmpty = (value) => {
         (typeof value === "string" && value.trim().length === 0)
     );
 };
+
+//convertit les dates dans un format plus lisible pour les utilisateurs
+export const dateParser = (num) => {
+    let options = {hour: "2-digit", minute: "2-digit", second: "2-digit", weekday: "long", year:"numeric", month:"short", day:"numeric"};
+
+    let timestamp = Date.parse(num);
+
+    let date = new Date(timestamp).toLocaleDateString('fr-FR', options);
+
+    return date.toString();
+}

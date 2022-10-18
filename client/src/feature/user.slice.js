@@ -13,13 +13,16 @@ export const userSlice = createSlice({
         setPicture: (state, action) => {
             state.user.picture = action.payload;
         },
+        setUserBio: (state, action) => {
+            state.user.bio = action.payload;
+        }
     },
 });
 
 export default userSlice.reducer;
 
 //Actions
-const { setUserData, setPicture } = userSlice.actions;
+const { setUserData, setPicture, setUserBio } = userSlice.actions;
 
 export const fetchUser = (uid) => async dispatch => {
     try {
@@ -42,6 +45,16 @@ export const uploadPicture = (data, id) => async dispatch => {
                     dispatch(setPicture(res.data.picture));
                 });
         })
+    } catch (err) {
+        return console.log(err);
+    };
+};
+
+export const updateBio = (userId, bio) => async dispatch => {
+    try {
+        await axios
+        .put(`${process.env.REACT_APP_API_URL}api/user/` + userId, { bio })
+        .then((res) => dispatch(setUserBio(res.data.bio)))
     } catch (err) {
         return console.log(err);
     };
