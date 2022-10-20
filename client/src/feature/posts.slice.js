@@ -19,11 +19,16 @@ export default postsSlice.reducer;
 //Posts Action
 const { setPostsData } = postsSlice.actions;
 
-export const fetchPosts = () => async dispatch => {
+//le paramètre "num" correspond au numéro passé par la variable "count" du component "Thread" afin de créer l'infinite scroll
+//Ainsi on envoie un nombre limité (5) de posts dans notre store et il n'est pas surchargé
+export const fetchPosts = (num) => async dispatch => {
     try {
         await axios
         .get(`${process.env.REACT_APP_API_URL}api/post`)
-        .then((res) => dispatch(setPostsData(res.data)))
+        .then((res) => {
+            const array = res.data.slice(0, num)
+            dispatch(setPostsData(array))
+        })
         } catch (err) {
             return console.log(err) //notifier l'erreur au user
         };

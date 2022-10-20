@@ -22,7 +22,7 @@ const LikeButton = ({ posts }) => {
 
     //on regarde si l'id du user est dans l'array likers du post, si il l'est on passe le state liked sur true
     useEffect (() => {
-        if (posts.likers.includes(uid)) setLiked(true)
+        if (posts.likers.includes(uid)) setLiked(true);
     }, [uid, posts.likers, liked])
 
     return (
@@ -35,6 +35,7 @@ const LikeButton = ({ posts }) => {
             <img src="./img/icons/heart-filled.svg" alt="unlike" 
             onClick={unlike}/>
            )}
+           <span>{posts.likers.length}</span>
         </div>
     );
 };
