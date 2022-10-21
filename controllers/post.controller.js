@@ -40,9 +40,7 @@ module.exports.updatePost = (req, res) => {
         message: req.body.message
     }
 
-    /*PostModel.updateOne({ _id: req.params.id, posterId: req.auth.userId }, { $set : updatedPost})
-                    .then(() => res.status(200).json({message: "Post udpated"}))
-                    .catch(error => res.status(401).json({ error })); */
+
     PostModel.findOne({_id: req.params.id})
         .then((post) => {
             if (req.auth.userId != post.posterId) {
