@@ -1,4 +1,4 @@
-import { createSlice, current } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
 //Posts Slice
@@ -12,11 +12,20 @@ export const postsSlice = createSlice({
             state.posts = action.payload;
         },
         setPostMessage: (state, action) => {
-                console.log(current(state.posts))
                 const post = state.posts.find((post) => post._id === action.payload.postId);
-                console.log(current(post))
                 if (!post) return
                 else post.message = action.payload.message
+        },
+        setDeletePost: (state, action) => {
+            state.posts = state.posts.filter((post) => post._id !== action.payload.postId)
+        },
+        setLike: (state, action) => {
+            const post = state.posts.find((post) => post._id === action.payload.postId)
+            post.likers.push(action.payload.userId)
+        },
+        setUnlike: (state, action) => {
+            const post = state.posts.find((post) => post._id === action.payload.postId)
+            post.likers = post.likers.filter((liker) => liker !== action.payload.userId)
         }
     },
 });
@@ -24,7 +33,7 @@ export const postsSlice = createSlice({
 export default postsSlice.reducer;
 
 //Posts Action
-const { setPostsData, setPostMessage } = postsSlice.actions;
+const { setPostsData, setPostMessage, setDeletePost, setLike, setUnlike } = postsSlice.actions;
 
 //le paramètre "num" correspond au numéro passé par la variable "count" du component "Thread" afin de créer l'infinite scroll
 //Ainsi on envoie un nombre limité (5) de posts dans notre store et il n'est pas surchargé
@@ -41,21 +50,25 @@ export const fetchPosts = (num) => async dispatch => {
         };
     };
 
-//Like and Unlike Post n'utilise pas redux finalement (au départ je pensais en avoir besoin) 
-//mais j'ai laissé les fonctions ici car ça me parait logique comme ce sont quand même des actions liés aux posts
-export const likePost = async (postId, userId) => {
+export const likePost = (postId, userId) => async dispatch => {
     try {
         await axios
         .patch(`${process.env.REACT_APP_API_URL}api/post/like-post/` + postId, { id: userId })
+        .then((res) => {
+            dispatch(setLike({ postId, userId }))
+        })
     } catch (err) {
         return console.log(err)
     };
 };
 
-export const unlikePost = async (postId, userId) => {
+export const unlikePost = (postId, userId) => async dispatch => {
     try {
         await axios
         .patch(`${process.env.REACT_APP_API_URL}api/post/unlike-post/` + postId, { id: userId })
+        .then((res) => {
+            dispatch(setUnlike({ postId, userId }))
+        })
     } catch (err) {
         return console.log(err)
     };
@@ -72,3 +85,15 @@ export const updatePost = (postId, message) => async dispatch  => {
         return console.log(err)
     };
 };
+
+export const deletePost = (postId) => async dispatch => {
+    try {
+        await axios
+        .delete(`${process.env.REACT_APP_API_URL}api/post/` + postId, { withCredentials: true })
+        .then((res) => {
+            dispatch(setDeletePost({postId}))
+        })
+    } catch(err) {
+        return console.log(err)
+    };
+}
