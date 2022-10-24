@@ -240,7 +240,8 @@
           display: flex;
 
           h3 {
-            font-family: $font-1;
+            font-family: $font-2;
+            font-size: 18px;
           }
           span {
             transform: translateX(6px);
@@ -250,7 +251,7 @@
         span {
           font-size: 0.9rem;
           font-style: italic;
-          font-family: $font-1;
+          font-family: $font-2;
         }
       }
       p {

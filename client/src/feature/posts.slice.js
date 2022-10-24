@@ -26,14 +26,17 @@ export const postsSlice = createSlice({
         setUnlike: (state, action) => {
             const post = state.posts.find((post) => post._id === action.payload.postId)
             post.likers = post.likers.filter((liker) => liker !== action.payload.userId)
+        },
+        setAddComment: (state, action) => {
+
         }
     },
 });
 
 export default postsSlice.reducer;
 
-//Posts Action
-const { setPostsData, setPostMessage, setDeletePost, setLike, setUnlike } = postsSlice.actions;
+//Posts Actions
+const { setPostsData, setPostMessage, setDeletePost, setLike, setUnlike, setAddComment } = postsSlice.actions;
 
 //le paramètre "num" correspond au numéro passé par la variable "count" du component "Thread" afin de créer l'infinite scroll
 //Ainsi on envoie un nombre limité (5) de posts dans notre store et il n'est pas surchargé
@@ -96,4 +99,18 @@ export const deletePost = (postId) => async dispatch => {
     } catch(err) {
         return console.log(err)
     };
-}
+};
+
+//Comments Actions
+
+export const addComment = (postId, commenterId, text, commenterPseudo) => async dispatch => {
+    try {
+        await axios
+        .patch(`${process.env.REACT_APP_API_URL}api/post/comment-post/` + postId, { commenterId, text, commenterPseudo }, { withCredentials: true })
+        .then((res) => {
+            dispatch(setAddComment({ postId }))
+        })
+    } catch(err) {
+        return console.log(err)
+    };
+};
