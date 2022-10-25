@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { dateParser, isEmpty } from "../Utils";
 import { addComment, fetchPosts } from "../../feature/posts.slice";
+import EditDeleteComment from "./EditDeleteComment";
 
 const CardComments = ({ posts }) => {
     const [text, setText] = useState("");
@@ -42,6 +43,7 @@ const CardComments = ({ posts }) => {
                                 <span>{dateParser(comment.createdAt)}</span>
                             </div>
                             <p>{comment.text}</p>
+                            <EditDeleteComment comment={comment} postId={posts._id} />
                         </div>
                     </div>
                 )

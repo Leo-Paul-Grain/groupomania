@@ -277,7 +277,7 @@
           margin-top: 14px;
           label {
             background: $white;
-            color: $color-1;
+            color: $color-3;
             padding: 6px 12px 5px;
             border-radius: 20px 20px 20px 6px;
             cursor: pointer;
@@ -325,7 +325,7 @@
 
               &:hover {
                 width: inherit;
-                background: $color-1;
+                background: #fd2d014f;
               }
             }
           }
@@ -356,7 +356,7 @@
         float: right;
 
         &:hover {
-          background: $color-1;
+          background: #fd2d014f;
           letter-spacing: 2px;
           width: 130px;
         }

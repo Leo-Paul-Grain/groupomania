@@ -14,21 +14,34 @@ export const postsSlice = createSlice({
         setPostMessage: (state, action) => {
                 const post = state.posts.find((post) => post._id === action.payload.postId);
                 if (!post) return
-                else post.message = action.payload.message
+                else post.message = action.payload.message;
         },
         setDeletePost: (state, action) => {
-            state.posts = state.posts.filter((post) => post._id !== action.payload.postId)
+            state.posts = state.posts.filter((post) => post._id !== action.payload.postId);
         },
         setLike: (state, action) => {
-            const post = state.posts.find((post) => post._id === action.payload.postId)
-            post.likers.push(action.payload.userId)
+            const post = state.posts.find((post) => post._id === action.payload.postId);
+            if (!post) return
+            else post.likers.push(action.payload.userId);
         },
         setUnlike: (state, action) => {
-            const post = state.posts.find((post) => post._id === action.payload.postId)
-            post.likers = post.likers.filter((liker) => liker !== action.payload.userId)
+            const post = state.posts.find((post) => post._id === action.payload.postId);
+            if (!post) return
+            else post.likers = post.likers.filter((liker) => liker !== action.payload.userId);
         },
         setAddComment: (state, action) => {
 
+        },
+        setEditComment: (state, action) => {
+            const post = state.posts.find((post) => post._id === action.payload.postId);
+            const comment = post.comments.find((comment) => comment._id === action.payload.commentId);
+            if (!comment) return
+            else comment.text = action.payload.text;
+        },
+        setDeleteComment: (state, action) => {
+            const post = state.posts.find((post) => post._id === action.payload.postId);
+            if (!post) return
+            else post.comments = post.comments.filter((comment) => comment._id !== action.payload.commentId);
         }
     },
 });
@@ -36,7 +49,7 @@ export const postsSlice = createSlice({
 export default postsSlice.reducer;
 
 //Posts Actions
-const { setPostsData, setPostMessage, setDeletePost, setLike, setUnlike, setAddComment } = postsSlice.actions;
+const { setPostsData, setPostMessage, setDeletePost, setLike, setUnlike, setAddComment, setEditComment, setDeleteComment } = postsSlice.actions;
 
 //le paramètre "num" correspond au numéro passé par la variable "count" du component "Thread" afin de créer l'infinite scroll
 //Ainsi on envoie un nombre limité (5) de posts dans notre store et il n'est pas surchargé
@@ -46,7 +59,7 @@ export const fetchPosts = (num) => async dispatch => {
         .get(`${process.env.REACT_APP_API_URL}api/post`)
         .then((res) => {
             const array = res.data.slice(0, num)
-            dispatch(setPostsData(array))
+            dispatch(setPostsData(array));
         })
         } catch (err) {
             return console.log(err) //notifier l'erreur au user
@@ -58,7 +71,7 @@ export const likePost = (postId, userId) => async dispatch => {
         await axios
         .patch(`${process.env.REACT_APP_API_URL}api/post/like-post/` + postId, { id: userId })
         .then((res) => {
-            dispatch(setLike({ postId, userId }))
+            dispatch(setLike({ postId, userId }));
         })
     } catch (err) {
         return console.log(err)
@@ -70,7 +83,7 @@ export const unlikePost = (postId, userId) => async dispatch => {
         await axios
         .patch(`${process.env.REACT_APP_API_URL}api/post/unlike-post/` + postId, { id: userId })
         .then((res) => {
-            dispatch(setUnlike({ postId, userId }))
+            dispatch(setUnlike({ postId, userId }));
         })
     } catch (err) {
         return console.log(err)
@@ -82,7 +95,7 @@ export const updatePost = (postId, message) => async dispatch  => {
         await axios
         .put(`${process.env.REACT_APP_API_URL}api/post/` + postId, { message }, { withCredentials: true })
         .then((res) => {
-            dispatch(setPostMessage({postId, message}))
+            dispatch(setPostMessage({postId, message}));
         })
     } catch(err) {
         return console.log(err)
@@ -94,7 +107,7 @@ export const deletePost = (postId) => async dispatch => {
         await axios
         .delete(`${process.env.REACT_APP_API_URL}api/post/` + postId, { withCredentials: true })
         .then((res) => {
-            dispatch(setDeletePost({postId}))
+            dispatch(setDeletePost({postId}));
         })
     } catch(err) {
         return console.log(err)
@@ -108,9 +121,33 @@ export const addComment = (postId, commenterId, text, commenterPseudo) => async 
         await axios
         .patch(`${process.env.REACT_APP_API_URL}api/post/comment-post/` + postId, { commenterId, text, commenterPseudo }, { withCredentials: true })
         .then((res) => {
-            dispatch(setAddComment({ postId }))
+            dispatch(setAddComment({ postId }));
         })
     } catch(err) {
         return console.log(err)
     };
 };
+
+export const editComment = (postId, commentId, text) => async dispatch => {
+    try {
+        await axios
+        .patch(`${process.env.REACT_APP_API_URL}api/post/edit-comment-post/` + postId, { commentId, text }, { withCredentials: true })
+        .then((res) => {
+            dispatch(setEditComment({ postId, commentId, text }));
+        })
+    } catch(err) {
+        return console.log(err)
+    };
+};
+
+export const deleteComment = (postId, commentId) => async dispatch => {
+    try {
+        await axios
+        .patch(`${process.env.REACT_APP_API_URL}api/post/delete-comment-post/` + postId, { commentId }, { withCredentials: true })
+        .then((res) => {
+            dispatch(setDeleteComment({ postId, commentId }));
+        })
+    } catch(err) {
+        return console.log(err)
+    };
+}
