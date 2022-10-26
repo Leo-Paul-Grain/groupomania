@@ -8,16 +8,18 @@ const Home = () => {
    
     //si uid existe (donc un user est connecté), on affiche la page, sinon on affiche le log pour qu'il se connecte
     return (
-        <div className="profil-page">
+        <div className="home">
             {uid ? (
                 <div className="main">
                     <Thread />
                 </div>
             ) : (
-            <div className="log-container">
-                <Log />
-                <div className="img-container">
-                    <img src="./img/login.svg" alt="Login"/>
+            <div className='login-page'>
+                <div className="log-container">
+                    <Log />
+                    <div className="img-container">
+                        <img src="./img/login.svg" alt="Login"/>
+                    </div>
                 </div>
             </div>
             )}
