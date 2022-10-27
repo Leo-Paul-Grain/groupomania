@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import UploadImg from './UploadImg';
 import { updateBio } from '../../feature/user.slice';
-import { dateParser } from '../Utils';
+import { dateParser, isEmpty } from '../Utils';
 
 const UpdateProfil = () => {
     const [bio, setBio] = useState('');
     const [updateForm, setUpdateForm] = useState(false); //pour afficher soit la bio quand false, soit l'input pour la modifier si true
     const userData = useSelector((state) => state.user.user);
+    const errors = useSelector((state) => state.user.errors);
     const dispatch = useDispatch();
 
     const handleUpdate = () => {
@@ -23,8 +24,8 @@ const UpdateProfil = () => {
                     <h3>Photo de profil</h3>
                     <img src={userData.picture} alt="profil-pic" />
                     <UploadImg />
-                    <p>errors.maxSize</p>
-                    <p>errors.format</p>
+                    {!isEmpty(errors.format) && <p>{errors.format}</p>}
+                    {!isEmpty(errors.maxSize) && <p>{errors.maxSize}</p>}
                 </div>
                 <div className='right-part'>
                     <div className='bio-update'>
@@ -44,7 +45,7 @@ const UpdateProfil = () => {
                             </>
                         )}
                     </div>
-                    <h4>Menbre depuis le : {dateParser(userData.createdAt)}</h4>
+                    <h4>Membre depuis le : {dateParser(userData.createdAt)}</h4>
                 </div>
             </div>
         </div>

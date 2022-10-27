@@ -5,6 +5,7 @@ export const userSlice = createSlice({
     name: "user",
     initialState: {
         user: ' ',
+        errors: [],
     },
     reducers: {
         setUserData: (state, action) => {
@@ -15,6 +16,9 @@ export const userSlice = createSlice({
         },
         setUserBio: (state, action) => {
             state.user.bio = action.payload;
+        },
+        setProfilErrors: (state, action) => {
+            state.errors = action.payload;
         }
     },
 });
@@ -22,7 +26,7 @@ export const userSlice = createSlice({
 export default userSlice.reducer;
 
 //Actions
-const { setUserData, setPicture, setUserBio } = userSlice.actions;
+const { setUserData, setPicture, setUserBio, setProfilErrors } = userSlice.actions;
 
 export const fetchUser = (uid) => async dispatch => {
     try {
@@ -37,13 +41,18 @@ export const fetchUser = (uid) => async dispatch => {
 export const uploadPicture = (data, id) => async dispatch => {
     try {
         await axios
-        .post(`${process.env.REACT_APP_API_URL}api/user/upload`, data)
+        .post(`${process.env.REACT_APP_API_URL}api/user/upload`, data, { withCredentials:true })
         .then((res) => {
-            return axios
-                .get(`${process.env.REACT_APP_API_URL}api/user/${id}`)
-                .then((res) => {
-                    dispatch(setPicture(res.data.picture));
-                });
+            if (res.data.errors) {
+                dispatch(setProfilErrors(res.data.errors));
+            } else {
+                dispatch(setProfilErrors([]));
+                return axios
+                    .get(`${process.env.REACT_APP_API_URL}api/user/${id}`, { withCredentials:true })
+                    .then((res) => {
+                        dispatch(setPicture(res.data.picture));
+                    });
+            }
         })
     } catch (err) {
         return console.log(err);
@@ -53,7 +62,7 @@ export const uploadPicture = (data, id) => async dispatch => {
 export const updateBio = (userId, bio) => async dispatch => {
     try {
         await axios
-        .put(`${process.env.REACT_APP_API_URL}api/user/` + userId, { bio })
+        .put(`${process.env.REACT_APP_API_URL}api/user/` + userId, { bio }, { withCredentials:true })
         .then((res) => dispatch(setUserBio(res.data.bio)))
     } catch (err) {
         return console.log(err);

@@ -81,6 +81,8 @@ export const addPost = (data) => async dispatch => {
             dispatch(setAddPost());
             if (res.data.errors) {
                 dispatch(setPostErrors(res.data.errors))
+            } else {
+                dispatch(setPostErrors([]))
             }
         })
         } catch (err) {

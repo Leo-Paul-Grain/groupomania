@@ -16,15 +16,19 @@ module.exports.uploadProfil = async (req, res) => {
     }
 
     try {
-        const user = await UserModel.findByIdAndUpdate(
-            req.body.userId,
-            { $set: {picture: "./uploads/" + req.file.filename}},
-            {new: true, upsert: true, setDefaultsOnInsert: true},
-        );
-        if (user) {
-            res.send(user)
+        if (req.auth.userId != req.body.userId) {
+            return res.status(401).send('Unauthorized User');
         } else {
-            res.status(500).send({ });
+            const user = await UserModel.findByIdAndUpdate(
+                req.body.userId,
+                { $set: {picture: "./uploads/" + req.file.filename}},
+                {new: true, upsert: true, setDefaultsOnInsert: true},
+            );
+            if (user) {
+                res.send(user)
+            } else {
+                res.status(500).send({ });
+            }
         }
     } catch(err) {
         console.error(err);
