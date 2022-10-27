@@ -1,22 +1,39 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { isEmpty, dateParser } from "../Utils";
 import { NavLink } from "react-router-dom";
+import { addPost, fetchPosts } from "../../feature/posts.slice";
 
 const NewPostForm = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [message, setMessage] = useState("");
-    const [postPicture, setPostPicture] = useState(null);
+    const [postPicture, setPostPicture] = useState(null); //image qu'on affiche en front
     const [video, setVideo] = useState("");
-    const [file, setFile] = useState();
+    const [file, setFile] = useState(); //image que l'on envoie au back
     const userData = useSelector((state) => state.user.user);
+    const errors = useSelector((state) => state.posts.errors);
+    const dispatch = useDispatch();
     
-    const handlePicture = () => {
+    const handlePost = async () => {
+        if (message || postPicture || video) {
+            const data = new FormData();
+            data.append('posterId', userData._id);
+            data.append('message', message);
+            if (file) data.append('file', file);
+            data.append('video', video);
 
+            await dispatch(addPost(data));
+            dispatch(fetchPosts());
+            cancelPost();
+        } else {
+            alert("Veuillez écrire un message")
+        }
     };
 
-    const handlePost = () => {
-
+    const handlePicture = (e) => {
+        setPostPicture(URL.createObjectURL(e.target.files[0])) //permet la prévisualisation de l'image
+        setFile(e.target.files[0]);
+        setVideo('') //on post soit une image soit une vidéo
     };
     
     const cancelPost = () => {
@@ -64,7 +81,7 @@ const NewPostForm = () => {
             ) : (
                 <>
                         <div className="user-info">
-                        <NavLink exact to="/profil">
+                        <NavLink to="/profil">
                             <img src={userData.picture} alt="user-pic" />
                         </NavLink>
                         </div>
@@ -117,6 +134,8 @@ const NewPostForm = () => {
                                     <button onClick={() => setVideo('')}>Supprimer video</button>
                                 )}
                             </div>
+                            {!isEmpty(errors.format) && <p>{errors.format}</p>}
+                            {!isEmpty(errors.maxSize) && <p>{errors.maxSize}</p>}
                             <div className="btn-send">
                                 {message || postPicture || video.length > 20 ? (
                                     <button className="cancel" onClick={cancelPost}>Annuler</button>

@@ -18,9 +18,6 @@ const UploadImg = () => {
         dispatch(uploadPicture(data, userData._id));
     };
 
-/*{`${process.env.REACT_APP_API_URL}api/user/upload`}
-*/
-
     return(
         <form action="" onSubmit={handlePicture} className="upload-pic">
             <label htmlFor="file">Changer l'image</label>

@@ -6,10 +6,17 @@ export const postsSlice = createSlice({
     name: "posts",
     initialState: {
         posts: {},
+        errors: [],
     },
     reducers: {
         setPostsData: (state, action) => {
             state.posts = action.payload;
+        },
+        setAddPost: (state, action) => {
+
+        },
+        setPostErrors: (state, action) => {
+            state.errors = action.payload;
         },
         setPostMessage: (state, action) => {
                 const post = state.posts.find((post) => post._id === action.payload.postId);
@@ -49,7 +56,7 @@ export const postsSlice = createSlice({
 export default postsSlice.reducer;
 
 //Posts Actions
-const { setPostsData, setPostMessage, setDeletePost, setLike, setUnlike, setAddComment, setEditComment, setDeleteComment } = postsSlice.actions;
+const { setPostsData, setAddPost, setPostErrors, setPostMessage, setDeletePost, setLike, setUnlike, setAddComment, setEditComment, setDeleteComment } = postsSlice.actions;
 
 //le paramètre "num" correspond au numéro passé par la variable "count" du component "Thread" afin de créer l'infinite scroll
 //Ainsi on envoie un nombre limité (5) de posts dans notre store et il n'est pas surchargé
@@ -66,10 +73,25 @@ export const fetchPosts = (num) => async dispatch => {
         };
     };
 
+export const addPost = (data) => async dispatch => {
+    try {
+        await axios
+        .post(`${process.env.REACT_APP_API_URL}api/post`, data)
+        .then((res) => {
+            dispatch(setAddPost());
+            if (res.data.errors) {
+                dispatch(setPostErrors(res.data.errors))
+            }
+        })
+        } catch (err) {
+            return console.log(err)
+        };
+};
+
 export const likePost = (postId, userId) => async dispatch => {
     try {
         await axios
-        .patch(`${process.env.REACT_APP_API_URL}api/post/like-post/` + postId, { id: userId })
+        .patch(`${process.env.REACT_APP_API_URL}api/post/like-post/` + postId, { id: userId }, { withCredentials: true })
         .then((res) => {
             dispatch(setLike({ postId, userId }));
         })
@@ -81,7 +103,7 @@ export const likePost = (postId, userId) => async dispatch => {
 export const unlikePost = (postId, userId) => async dispatch => {
     try {
         await axios
-        .patch(`${process.env.REACT_APP_API_URL}api/post/unlike-post/` + postId, { id: userId })
+        .patch(`${process.env.REACT_APP_API_URL}api/post/unlike-post/` + postId, { id: userId }, {withCredentials: true })
         .then((res) => {
             dispatch(setUnlike({ postId, userId }));
         })
@@ -151,3 +173,16 @@ export const deleteComment = (postId, commentId) => async dispatch => {
         return console.log(err)
     };
 }
+
+//Posts Errors Slice (taille et format d'image)
+export const postsErrorsSlice = createSlice({
+    name: "postsErrors",
+    initialState: {
+        postsErrors: [],
+    },
+    reducers: {
+        setPostErrors: (state, action) => {
+
+        },
+    },
+});

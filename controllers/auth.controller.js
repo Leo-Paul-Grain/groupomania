@@ -19,9 +19,9 @@ module.exports.signUp = async (req, res) => {
     }
     catch(err) {
         const errors = signUpErrors(err)
-        res.status(200).send({errors})
-    }
-}
+        res.status(200).send({errors}) //ici on ne devrait pas renvoyer un statut 200 puisque c'est un échec
+    }                                  //mais si on renvoie un statut 400 on ne passe jamais au .then qui suit la requête en front et on ne récupère donc pas les erreurs a afficher. Donc j'ai fait une exception
+};
 
 module.exports.signIn = async (req, res) => {
     const { email, password } = req.body
@@ -33,7 +33,7 @@ module.exports.signIn = async (req, res) => {
         res.status(200).json({ message: 'User logged in'})
     } catch (err) {
         const errors = signInErrors(err);
-        res.status(200).json({ errors });
+        res.status(200).json({ errors }); //pareil que pour signUp, un statut 400 ne permettrait pas de récuperer les erreurs en front car le .then qui suit la requête ne s'éxécute jamais
     }
 };
 
@@ -42,4 +42,4 @@ module.exports.logout = (req, res) => {
     res.cookie('jwt', '', { maxAge: 1 }); //défini la durée du cookie sur 1 milliseconde pour le faire deisparaitre
     res.status(200).json({ message: "cookie removed" })
     res.redirect('/'); //si on ne fait pas ça le res.cookie ne marchera pas car il ne constitue pas une réponse valide en soi
-}
+};

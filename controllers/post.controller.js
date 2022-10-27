@@ -2,6 +2,7 @@ const PostModel = require('../models/post.model');
 const UserModel = require('../models/user.model');
 const ObjectID = require('mongoose').Types.ObjectId;
 const jwt = require('jsonwebtoken');
+const { uploadErrors } = require('../utils/error.utils');
 
 module.exports.readPost = (req, res) => {
     PostModel.find((err, data) => {
@@ -10,10 +11,24 @@ module.exports.readPost = (req, res) => {
     }).sort({ createdAt: -1 }); //methode mongoose qui permet d'afficher les posts du plus récent au plus ancien (c'est l'inverse par défaut)
 };
 
+
 module.exports.createPost = async (req, res) => {
+    if (!!req.file) {
+        try {
+            if (req.file.mimetype !== "image/jpg" && req.file.mimetype !== "image/png" && req.file.mimetype !== "image/jpeg")
+                throw Error("invalid file"); 
+        
+            if (req.file.size > 2000000) throw Error("max size exceeded");
+        } catch (err) {
+            const errors = uploadErrors(err)
+            return res.status(200).json({ errors }); //ici on ne devrait pas renvoyer un statut 200 puisque c'est un échec
+        }                                            //mais si on renvoie un statut 400 on ne passe jamais au .then qui suit la requête en front et on ne récupère donc pas les erreurs a afficher. Donc j'ai fait une exception
+    };
+
     const newPost = new PostModel({
         posterId: req.body.posterId,
         message: req.body.message,
+        picture: !!req.file ? "./uploads/" + req.file.filename : "",
         video: req.body.video,
         likers: [],
         comments: [],
@@ -62,7 +77,7 @@ module.exports.deletePost = (req, res) => {
 
     PostModel.findOne({ _id: req.params.id})
     .then((post) => {
-        if (req.auth.userId != post.posterId) {
+        if (req.auth.userId != post.posterId && req.auth.admin === false) {
             return res.status(401).send('Unauthorized User');
         } else {
             PostModel.deleteOne({ _id: req.params.id })
@@ -82,7 +97,7 @@ module.exports.likePost = async (req, res) => {
     try {
         await PostModel.findByIdAndUpdate(
             req.params.id,
-            {$addToSet: { likers: req.body.id }},
+            {$addToSet: { likers: req.auth.userId }},
             { new: true }
         )
         .then((data) => res.send(data))
@@ -100,7 +115,7 @@ module.exports.unlikePost = async (req, res) => {
     try {
         await PostModel.findByIdAndUpdate(
             req.params.id,
-            {$pull: { likers: req.body.id }},
+            {$pull: { likers: req.auth.userId }},
             { new: true }
         )
         .then((data) => res.send(data))
@@ -138,31 +153,10 @@ module.exports.commentPost = (req, res) => {
 };
 
 /* On vérifie que l'id passé en paramètre est un ObjectId mongoDB valide
-*on utilise la méthode updateOne avec un double filtre, on cherche d'abord le post d'apèrs l'id en param puis le commentaire avec l'id du body
-*on update le champ avec la méthode set et l'opérateur positionnel $ qui identifie un élément d'un array sans qu'on est besoin de spécifier son index
+*on utilise la méthode findOne pour trouver le post qui correspond à l'id passé en param puis le commentaire à éditer (qui correspond au commentId passé en body)
+*On vérifie que l'id contenu dans le token d'identification est le même que l'id de la personne qui a créée le commentaire
+*si c'est bon on utilise udpateOne pour éditer le commentaire
 */
-/*module.exports.editCommentPost = (req, res) => {
-    if (!ObjectID.isValid(req.params.id))
-        return res.status(400).send('ID unknown : ' + req.params.id);
-
-    try {
-        return PostModel.updateOne(
-           {_id: req.params.id, 'comments._id': req.body.commentId},
-           {
-            $set: {
-                "comments.$.text": req.body.text
-            }
-           }
-        )
-        .then((data) => res.send(data))
-        .catch((err) => res.status(400).send({ message: err }));
-        
-    } catch (err) {
-        return res.status(400).send(err);
-    }
-};
-*/
-
 module.exports.editCommentPost = (req, res) => {
     if (!ObjectID.isValid(req.params.id))
         return res.status(400).send('ID unknown : ' + req.params.id);
@@ -188,7 +182,8 @@ module.exports.editCommentPost = (req, res) => {
 
 
 /* On cherche le post dans la base
-*on utilise l'opérateur $pull pour retirer le commentaire, en lui précisant que c'est le commentaire qui à l'id passé dans le body 
+*on check si l'id du token d'authentification est le même que celui de l'auteur du post
+*si c'est bon on fait un updateOne comme dans editCommentPost juste au dessus, mais on utilise l'opérateur $pull pour retirer le commentaire
 */
 
 module.exports.deleteCommentPost = (req, res) => {
@@ -197,7 +192,7 @@ module.exports.deleteCommentPost = (req, res) => {
 
     PostModel.findOne({ _id: req.params.id}, {comments: {$elemMatch: {_id: req.body.commentId}}})
     .then((theComment) => {
-        if (req.auth.userId != theComment.comments[0].commenterId) { //idéalement je pourrais modifier theComment.comments[0].commenterId (pour comments.$.commenterId ?)
+        if (req.auth.userId != theComment.comments[0].commenterId) {
             return res.status(401).send('Unauthorized User');
         } else {
             PostModel.updateOne(
