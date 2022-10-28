@@ -28,7 +28,7 @@ const SignUpForm = () => {
                 data: {
                     pseudo,
                     email,
-                    password
+                    password,
                 }
             })
             .then((res) => {

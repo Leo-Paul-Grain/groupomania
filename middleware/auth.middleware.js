@@ -36,8 +36,10 @@ module.exports.checkUser = (req, res, next) => {
                 next();
             } else {
                 const userId = decodedToken.id
+                const isAdmin = decodedToken.isAdmin
                 req.auth = {
-                    userId: userId
+                    userId: userId,
+                    isAdmin: isAdmin
                 }
                 let user = await UserModel.findById(decodedToken.id);
                 res.locals.user = user;

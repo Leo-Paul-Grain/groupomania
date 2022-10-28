@@ -4,8 +4,8 @@ const { signUpErrors, signInErrors } = require('../utils/error.utils');
 
 
 //Le token est généré à partir de l'id de utilisateur
-const createToken = (id) => {
-    return jwt.sign({id}, process.env.TOKEN_SECRET, {
+const createToken = (id, isAdmin) => {
+    return jwt.sign({id, isAdmin}, process.env.TOKEN_SECRET, {
         expiresIn: "24h"
     })
 };
@@ -28,7 +28,7 @@ module.exports.signIn = async (req, res) => {
 
     try {
         const user = await UserModel.login(email, password); //cherche l'utilisateur dans la base et stock dans une variable user
-        const token = createToken(user._id); //créé un token à partir de l'id de l'utilisateur
+        const token = createToken(user._id, user.isAdmin); //créé un token contenant l'id de l'utilisateur et le statut admin
         res.cookie('jwt', token, { httpOnly: true, maxAge: 86400000}); // créé un cookie avec en paramètres : son nom, sa valeur, et l'option httpOnly qui complique la récupération du cookie par du code JS malveillant
         res.status(200).json({ message: 'User logged in'})
     } catch (err) {

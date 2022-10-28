@@ -58,7 +58,7 @@ module.exports.updatePost = (req, res) => {
 
     PostModel.findOne({_id: req.params.id})
         .then((post) => {
-            if (req.auth.userId != post.posterId) {
+            if (req.auth.userId != post.posterId && req.auth.admin === false) {
                 return res.status(401).send('Unauthorized User');
             } else {
                 PostModel.updateOne({ _id: req.params.id }, { $set : updatedPost})
@@ -137,7 +137,7 @@ module.exports.commentPost = (req, res) => {
             {
                 $push: {
                     comments: {
-                        commenterId: req.body.commenterId,
+                        commenterId: req.auth.userId,
                         commenterPseudo: req.body.commenterPseudo,
                         text: req.body.text
                     }
@@ -161,10 +161,9 @@ module.exports.editCommentPost = (req, res) => {
     if (!ObjectID.isValid(req.params.id))
         return res.status(400).send('ID unknown : ' + req.params.id);
     
-    //PostModel.findOne({ _id: req.params.id}, {comments: {$elemMatch: {_id: req.body.commentId}}})
     PostModel.findOne({ _id: req.params.id, "comments._id": req.body.commentId}, "comments.$")
     .then((theComment) => {
-        if (req.auth.userId != theComment.comments[0].commenterId) { //idéalement je pourrais modifier theComment.comments[0].commenterId (pour comments.$.commenterId ?)
+        if (req.auth.userId != theComment.comments[0].commenterId && req.auth.admin === false) { 
             return res.status(401).send('Unauthorized User');
         } else {
             PostModel.updateOne(
@@ -192,7 +191,7 @@ module.exports.deleteCommentPost = (req, res) => {
 
     PostModel.findOne({ _id: req.params.id}, {comments: {$elemMatch: {_id: req.body.commentId}}})
     .then((theComment) => {
-        if (req.auth.userId != theComment.comments[0].commenterId) {
+        if (req.auth.userId != theComment.comments[0].commenterId && req.auth.admin === false) {
             return res.status(401).send('Unauthorized User');
         } else {
             PostModel.updateOne(

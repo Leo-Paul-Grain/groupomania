@@ -24,7 +24,7 @@ const CardComments = ({ posts }) => {
         <div className="comments-container">
             {posts.comments.map((comment) => {
                 return (
-                    <div className={comment.commenterId === userData._id ? "comment-container client" : "comment-container"} key={comment._id}>
+                    <div className={comment.commenterId === userData._id || userData.isAdmin === true ? "comment-container client" : "comment-container"} key={comment._id}>
                         <div className="left-part">
                             <img src={
                                 !isEmpty(usersData[0]) && 

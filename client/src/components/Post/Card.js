@@ -18,7 +18,6 @@ const Card = ({ posts }) => {
 
     const updateItem = () => {
         if (textUpdate) {
-            console.log(textUpdate)
             dispatch(updatePost(posts._id, textUpdate))
         }
         setIsUpdated(false);
@@ -88,7 +87,7 @@ const Card = ({ posts }) => {
                         title={posts._id}
                       ></iframe>
                     )}
-                    {userData._id === posts.posterId && (
+                    {(userData._id === posts.posterId || userData.isAdmin === true) && (
                         <div className='button-container'>
                             <div onClick={() => setIsUpdated(!isUpdated)}>
                                 <img src="./img/icons/edit.svg" alt="edit-icon"/>
