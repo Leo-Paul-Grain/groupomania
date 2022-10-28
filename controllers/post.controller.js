@@ -58,7 +58,7 @@ module.exports.updatePost = (req, res) => {
 
     PostModel.findOne({_id: req.params.id})
         .then((post) => {
-            if (req.auth.userId != post.posterId && req.auth.admin === false) {
+            if (req.auth.userId != post.posterId && req.auth.isAdmin === false) {
                 return res.status(401).send('Unauthorized User');
             } else {
                 PostModel.updateOne({ _id: req.params.id }, { $set : updatedPost})
@@ -77,7 +77,7 @@ module.exports.deletePost = (req, res) => {
 
     PostModel.findOne({ _id: req.params.id})
     .then((post) => {
-        if (req.auth.userId != post.posterId && req.auth.admin === false) {
+        if (req.auth.userId != post.posterId && req.auth.isAdmin === false) {
             return res.status(401).send('Unauthorized User');
         } else {
             PostModel.deleteOne({ _id: req.params.id })
@@ -163,7 +163,7 @@ module.exports.editCommentPost = (req, res) => {
     
     PostModel.findOne({ _id: req.params.id, "comments._id": req.body.commentId}, "comments.$")
     .then((theComment) => {
-        if (req.auth.userId != theComment.comments[0].commenterId && req.auth.admin === false) { 
+        if (req.auth.userId != theComment.comments[0].commenterId && req.auth.isAdmin === false) { 
             return res.status(401).send('Unauthorized User');
         } else {
             PostModel.updateOne(
@@ -191,7 +191,7 @@ module.exports.deleteCommentPost = (req, res) => {
 
     PostModel.findOne({ _id: req.params.id}, {comments: {$elemMatch: {_id: req.body.commentId}}})
     .then((theComment) => {
-        if (req.auth.userId != theComment.comments[0].commenterId && req.auth.admin === false) {
+        if (req.auth.userId != theComment.comments[0].commenterId && req.auth.isAdmin === false) {
             return res.status(401).send('Unauthorized User');
         } else {
             PostModel.updateOne(
