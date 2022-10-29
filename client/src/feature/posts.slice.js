@@ -6,7 +6,7 @@ export const postsSlice = createSlice({
     name: "posts",
     initialState: {
         posts: {},
-        errors: [],
+        errors: "",
     },
     reducers: {
         setPostsData: (state, action) => {
@@ -69,7 +69,7 @@ export const fetchPosts = (num) => async dispatch => {
             dispatch(setPostsData(array));
         })
         } catch (err) {
-            return console.log(err) //notifier l'erreur au user
+            return console.log(err)
         };
     };
 
@@ -77,17 +77,17 @@ export const addPost = (data) => async dispatch => {
     try {
         await axios
         .post(`${process.env.REACT_APP_API_URL}api/post`, data)
-        .then((res) => {
+        .then((req, res) => {
             dispatch(setAddPost());
-            if (res.data.errors) {
-                dispatch(setPostErrors(res.data.errors))
-            } else {
-                dispatch(setPostErrors([]))
-            }
+            dispatch(setPostErrors("")) // la requête a fonctionné donc on vide les erreurs dans notre store pour qu'elle ne s'affiche plus
         })
-        } catch (err) {
-            return console.log(err)
-        };
+    } catch (err) {
+        if (err.response.data.errors) {
+            const error = err.response.data.errors
+            dispatch(setPostErrors(error))
+        }
+        return console.log(err)
+    };
 };
 
 export const likePost = (postId, userId) => async dispatch => {

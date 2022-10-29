@@ -29,13 +29,11 @@ const SignInForm = () => {
                 if (res.data.errors) {
                     authError.innerHTML = res.data.errors;
                 } else {
-                    // Utiliser le history de react router dom
                     window.location = '/';
                 }
             })
             .catch((err) => {
                 console.log(err);
-                // Afficher l'erreur
             });
     };
     

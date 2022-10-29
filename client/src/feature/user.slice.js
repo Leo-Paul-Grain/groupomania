@@ -5,7 +5,7 @@ export const userSlice = createSlice({
     name: "user",
     initialState: {
         user: ' ',
-        errors: [],
+        errors: ' ',
     },
     reducers: {
         setUserData: (state, action) => {
@@ -43,19 +43,19 @@ export const uploadPicture = (data, id) => async dispatch => {
         await axios
         .post(`${process.env.REACT_APP_API_URL}api/user/upload`, data, { withCredentials:true })
         .then((res) => {
-            if (res.data.errors) {
-                dispatch(setProfilErrors(res.data.errors));
-            } else {
-                dispatch(setProfilErrors([]));
-                return axios
-                    .get(`${process.env.REACT_APP_API_URL}api/user/${id}`, { withCredentials:true })
-                    .then((res) => {
-                        dispatch(setPicture(res.data.picture));
-                    });
-            }
+            dispatch(setProfilErrors(" ")); // la requête à fonctionné donc on vide les erreurs dans notre store
+            return axios
+                .get(`${process.env.REACT_APP_API_URL}api/user/${id}`, { withCredentials:true })
+                .then((res) => {
+                    dispatch(setPicture(res.data.picture));
+                });
+            
         })
     } catch (err) {
-        return console.log(err);
+        if (err.response.data.errors) {
+            const error = err.response.data.errors
+            dispatch(setProfilErrors(error))
+        } else return console.log(err);
     };
 };
 

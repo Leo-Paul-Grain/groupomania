@@ -13,18 +13,6 @@ module.exports.readPost = (req, res) => {
 
 
 module.exports.createPost = async (req, res) => {
-    if (!!req.file) {
-        try {
-            if (req.file.mimetype !== "image/jpg" && req.file.mimetype !== "image/png" && req.file.mimetype !== "image/jpeg")
-                throw Error("invalid file"); 
-        
-            if (req.file.size > 2000000) throw Error("max size exceeded");
-        } catch (err) {
-            const errors = uploadErrors(err)
-            return res.status(200).json({ errors }); //ici on ne devrait pas renvoyer un statut 200 puisque c'est un échec
-        }                                            //mais si on renvoie un statut 400 on ne passe jamais au .then qui suit la requête en front et on ne récupère donc pas les erreurs a afficher. Donc j'ai fait une exception
-    };
-
     const newPost = new PostModel({
         posterId: req.body.posterId,
         message: req.body.message,
@@ -34,8 +22,13 @@ module.exports.createPost = async (req, res) => {
         comments: [],
     });
     try {
-        const post = await newPost.save();
-        return res.status(201).json({message: 'Post created :' + post});
+        if (req.body.message != '' || req.file || req.body.video != '') {
+            console.log(req.file)
+            const post = await newPost.save();
+            return res.status(201).json({message: 'Post created :' + post});
+        } else {
+            return res.status(413).json({ errors: "L'image dépasse 5 mo"})
+        }
     } catch (err) {
         return res.status(400).send(err);
     }
@@ -109,7 +102,7 @@ module.exports.likePost = async (req, res) => {
 };
 
 module.exports.unlikePost = async (req, res) => {
-    if (!ObjectID.isValid(req.params.id)) //est ce que l'id existe dans la base de données ?
+    if (!ObjectID.isValid(req.params.id))
         return res.status(400).send('ID unknown : ' + req.params.id);
 
     try {

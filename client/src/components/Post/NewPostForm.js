@@ -134,8 +134,8 @@ const NewPostForm = () => {
                                     <button onClick={() => setVideo('')}>Supprimer video</button>
                                 )}
                             </div>
-                            {!isEmpty(errors.format) && <p>{errors.format}</p>}
-                            {!isEmpty(errors.maxSize) && <p>{errors.maxSize}</p>}
+                            {!isEmpty(errors) && errors.includes("Extension de") && <p>{errors}</p>}
+                            {!isEmpty(errors) && errors.includes("5 mo") &&<p>{errors}</p>}
                             <div className="btn-send">
                                 {message || postPicture || video.length > 20 ? (
                                     <button className="cancel" onClick={cancelPost}>Annuler</button>

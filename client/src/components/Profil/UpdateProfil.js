@@ -24,8 +24,8 @@ const UpdateProfil = () => {
                     <h3>Photo de profil</h3>
                     <img src={userData.picture} alt="profil-pic" />
                     <UploadImg />
-                    {!isEmpty(errors.format) && <p>{errors.format}</p>}
-                    {!isEmpty(errors.maxSize) && <p>{errors.maxSize}</p>}
+                    {!isEmpty(errors) && errors.includes("Extension de fichier non supportée") && <p>{errors}</p>}
+                    {!isEmpty(errors) && errors.includes("5 mo") && <p>{errors}</p>}
                 </div>
                 <div className='right-part'>
                     <div className='bio-update'>
