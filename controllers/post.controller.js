@@ -31,8 +31,8 @@ module.exports.createPost = async (req, res) => {
         }
     } catch (err) {
         return res.status(400).send(err);
-    }
-}
+    };
+};
 
 /*On récupére le nouveau message dans le body et on le stocke dans une variable
 *On cherche le post à update d'après son id passé en paramètres
