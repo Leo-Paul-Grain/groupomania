@@ -1,23 +1,6 @@
 const jwt = require('jsonwebtoken');
 const UserModel = require('../models/user.model');
 
-/* OLD : Middleware with token in headers
-module.exports.checkUser = (req, res, next) => {
-    try {
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedToken = jwt.verify(token, 'process.env.TOKEN_SECRET');
-        const userId = decodedToken.userId;
-        req.auth = {
-            userId: userId
-        };
-    next();
-    } catch(error) {
-        res.status(401).json({ message: 'invalid or unknown token' })
-    }
-};
-
-
-*/
 /*On récupère le token dans les cookies
 * on le vérifie 
 *on récupère l'id qu'on avait passé dans le payload du token 
@@ -51,21 +34,6 @@ module.exports.checkUser = (req, res, next) => {
         next();
     }
 }
-/*OLD
-module.exports.checkUser = (req, res, next) => {
-    try {
-        const token = req.cookies.jwt;
-        const decodedToken = jwt.verify(token, process.env.TOKEN_SECRET);
-        const userId = decodedToken.id;
-        req.auth = {
-            userId: userId
-        };
-    next();
-    } catch(error) {
-        res.status(401).json({ message: 'invalid or unknown token' })
-    }
-};
-*/
 
 /*
 *On récupère le token

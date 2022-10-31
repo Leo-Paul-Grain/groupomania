@@ -20,8 +20,8 @@ router.delete('/:id', checkUser, userController.deleteUser);
 
 /*upload image de profil
 /Le fileFilter de multer va rejeter le fichier si son extension n'est pas bonne
-*ensuite il ajoute à la requête un champ fileValidationError qu'il remplit avec l'erreur à afficher au user
-*sur la route on test si ce champ existe, si c'est le cas on stop la requête, on récupère l'erreur et on l'envoie avec la réponse
+*ensuite il ajoute à la requête une propriété fileValidationError qu'il remplit avec l'erreur à afficher au user
+*sur la route on test si la propriété existe, si c'est le cas on stop la requête, on récupère l'erreur et on l'envoie avec la réponse
 *(si le champ n'existe pas par contre c'est qu'on a passé la validation donc on next pour passer au controller)
 *comme ça on peut dispatch ce contenu dans le store et récupérer l'erreur dedans pour l'afficher immédiatement au user
 */

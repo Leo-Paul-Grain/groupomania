@@ -41,5 +41,5 @@ module.exports.signIn = async (req, res) => {
 module.exports.logout = (req, res) => {
     res.cookie('jwt', '', { maxAge: 1 }); //défini la durée du cookie sur 1 milliseconde pour le faire deisparaitre
     res.status(200).json({ message: "cookie removed" })
-    res.redirect('/'); //si on ne fait pas ça le res.cookie ne marchera pas car il ne constitue pas une réponse valide en soi
+    res.redirect('/');
 };

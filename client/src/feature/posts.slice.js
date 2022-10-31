@@ -174,17 +174,4 @@ export const deleteComment = (postId, commentId) => async dispatch => {
     } catch(err) {
         return console.log(err)
     };
-}
-
-//Posts Errors Slice (taille et format d'image)
-export const postsErrorsSlice = createSlice({
-    name: "postsErrors",
-    initialState: {
-        postsErrors: [],
-    },
-    reducers: {
-        setPostErrors: (state, action) => {
-
-        },
-    },
-});
+};
