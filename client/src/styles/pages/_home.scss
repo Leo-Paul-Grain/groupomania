@@ -25,7 +25,7 @@
     .log-container {
       margin: 0 auto;
       display: grid;
-      grid-template-columns: 60% 40%;
+      grid-template-columns: 80% 20%;
   
       @media screen and(max-width: 885px) {
         grid-template-columns: 1fr;
@@ -35,8 +35,8 @@
     .connection-form {
       border: none;
       background: $color-4;
-      min-width: 490px;
-      width: 90%;
+      min-width: 340px;
+      width: 95%;
       text-align: center;
       margin: 0 auto;
       padding: 20px;
